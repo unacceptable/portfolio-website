@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- Background circle -->
+  <circle cx="8" cy="8" r="7.5" fill="#4F46E5" stroke="#3730A3" stroke-width="0.5"/>
+
+  <!-- "hi" text -->
+  <text x="8" y="10" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">hi</text>
+</svg>
