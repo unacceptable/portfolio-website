@@ -1,52 +1,57 @@
 <script lang="ts">
+  /**
+   * Root Layout
+   *
+   * Provides the site shell: header, footer, and theme management.
+   * All content data is externalized to $lib/data modules.
+   */
+
+  // ─────────────────────────────────────────────────────────────
+  // Imports
+  // ─────────────────────────────────────────────────────────────
+
   import '../lib/styles/design-system.css';
   import './+layout.css';
+
   import { browser } from '$app/environment';
   import { onMount } from 'svelte';
+
   import { createMobileMenuHandlers, initDarkMode, applyDarkMode } from '$lib/layout';
+  import { footerData, socialLinks } from '$lib/data/footer';
+  import { navLinks } from '$lib/data/navigation';
+  import { seo } from '$lib/data/seo';
+  import { icons } from '$lib/data/icons';
 
-  import linkedinIcon from '$lib/assets/linkedin.svg';
-  import githubIcon from '$lib/assets/github.svg';
-  import youtubeIcon from '$lib/assets/youtube.svg';
-  import stackoverflowIcon from '$lib/assets/stackoverflow.svg';
-  import emailIcon from '$lib/assets/email.svg';
+  // ─────────────────────────────────────────────────────────────
+  // State & Props
+  // ─────────────────────────────────────────────────────────────
 
-  // Obfuscated email to deter bots
-  const emailUser = 'robert';
-  const emailDomain = 'aztek.io';
-  function getEmailHref(): string {
-    return `mailto:${emailUser}@${emailDomain}`;
-  }
-
-  // Root layout: shared header/footer
   let { children } = $props();
-
   let darkMode = $state(true);
   let mobileMenuOpen = $state(false);
 
-  // Create mobile menu handlers
+  // ─────────────────────────────────────────────────────────────
+  // Mobile Menu Handlers
+  // ─────────────────────────────────────────────────────────────
+
   const { toggleMobileMenu, closeMobileMenu, handleClickOutside, handleKeydown } =
     createMobileMenuHandlers(
       () => mobileMenuOpen,
       (value) => { mobileMenuOpen = value; }
     );
 
-  // Reactive effect to update DOM when darkMode changes
+  // ─────────────────────────────────────────────────────────────
+  // Effects & Lifecycle
+  // ─────────────────────────────────────────────────────────────
+
   $effect(() => {
-    if (browser) {
-      applyDarkMode(darkMode);
-    }
+    if (browser) applyDarkMode(darkMode);
   });
 
-  // Initialize dark mode from localStorage on mount
   onMount(() => {
     darkMode = initDarkMode();
-
-    // Add event listeners for mobile menu
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleKeydown);
-
-    // Cleanup on unmount
     return () => {
       document.removeEventListener('click', handleClickOutside);
       document.removeEventListener('keydown', handleKeydown);
@@ -54,29 +59,33 @@
   });
 </script>
 
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SEO Meta Tags                                               -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
 <svelte:head>
-  <!-- Primary Meta Tags -->
-  <meta name="title" content="Robert Jackson II - Sr. DevOps Solutions Architect & SRE Manager">
-  <meta name="description" content="Sr. DevOps Solutions Architect and Site Reliability Engineering Manager with expertise in Kubernetes, AWS, Terraform, and AI/ML integrations. CKA certified with 6 AWS certifications including Solutions Architect Professional and DevOps Engineer Professional.">
-  <meta name="author" content="Robert Jackson II">
-  <meta name="keywords" content="Robert Jackson, Robert Jackson II, DevOps Engineer, Site Reliability Engineer, SRE Manager, DevOps Solutions Architect, Kubernetes Administrator, CKA, AWS Certified, Solutions Architect Professional, DevOps Engineer Professional, Terraform, Helm, Ansible, Docker, Python, CI/CD, Jenkins, GitHub Actions, GitLab CI, Infrastructure as Code, IaC, SOC2, Cloud Engineer, AWS Bedrock, AI Agent, BackBox, PDI Technologies, Koupon, Dell, Alkami, ARMOR">
+  <meta name="title" content={seo.title}>
+  <meta name="description" content={seo.description}>
+  <meta name="author" content={seo.author}>
+  <meta name="keywords" content={seo.keywords}>
 
-  <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://cdn.aztek.io/">
-  <meta property="og:title" content="Robert Jackson II - Sr. DevOps Solutions Architect & SRE Manager">
-  <meta property="og:description" content="Sr. DevOps Solutions Architect with expertise in Kubernetes, AWS, Terraform, AI/ML, and team leadership. CKA certified with 6 AWS certifications.">
-  <meta property="og:site_name" content="Robert Jackson II Portfolio">
+  <meta property="og:url" content={seo.url}>
+  <meta property="og:title" content={seo.title}>
+  <meta property="og:description" content={seo.shortDescription}>
+  <meta property="og:site_name" content={seo.siteName}>
 
-  <!-- Twitter -->
   <meta property="twitter:card" content="summary">
-  <meta property="twitter:url" content="https://cdn.aztek.io/">
-  <meta property="twitter:title" content="Robert Jackson II - Sr. DevOps Solutions Architect & SRE Manager">
-  <meta property="twitter:description" content="Sr. DevOps Solutions Architect with expertise in Kubernetes, AWS, Terraform, AI/ML, and team leadership. CKA certified with 6 AWS certifications.">
+  <meta property="twitter:url" content={seo.url}>
+  <meta property="twitter:title" content={seo.title}>
+  <meta property="twitter:description" content={seo.shortDescription}>
 
-  <!-- Canonical URL -->
-  <link rel="canonical" href="https://cdn.aztek.io/">
+  <link rel="canonical" href={seo.url}>
 </svelte:head>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- Header                                                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 
 <header class="site-header">
   <div class="container">
@@ -86,6 +95,7 @@
       </div>
 
       <div class="header-actions">
+        <!-- Theme Toggle -->
         <label class="theme-toggle" for="theme-toggle-input">
           <span class="theme-toggle__wrapper">
             <input
@@ -99,6 +109,7 @@
           </span>
         </label>
 
+        <!-- Mobile Menu Button -->
         <button
           class="mobile-menu-toggle"
           onclick={toggleMobileMenu}
@@ -113,15 +124,24 @@
       </div>
     </div>
 
+    <!-- Navigation -->
     <nav class="nav" class:mobile-open={mobileMenuOpen} id="mobile-nav" aria-label="Main navigation">
-      <a href="/" onclick={closeMobileMenu}>Home</a>
-      <a href="/about" onclick={closeMobileMenu}>About</a>
-      <a href="/certs" onclick={closeMobileMenu}>Certifications</a>
-      <a href="/error-demo" onclick={closeMobileMenu}>Error Demo</a>
-      <a href="/Resume.pdf" class="external-link" onclick={closeMobileMenu} target="_blank" rel="noopener noreferrer">Resume</a>
+      {#each navLinks as link (link.url)}
+        {#if link.external}
+          <a href={link.url} class="external-link" onclick={closeMobileMenu} target="_blank" rel="noopener noreferrer">
+            {link.label}
+          </a>
+        {:else}
+          <a href={link.url} onclick={closeMobileMenu}>{link.label}</a>
+        {/if}
+      {/each}
     </nav>
   </div>
 </header>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- Main Content                                                -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 
 <main class="content">
   <div class="container">
@@ -129,47 +149,64 @@
   </div>
 </main>
 
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- Footer                                                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
 <footer class="site-footer">
   <div class="container">
     <div class="footer-content">
+      <!-- About Section -->
       <div class="footer-section">
-        <h3>Portfolio</h3>
-        <p>Professional portfolio showcasing expertise and certifications.</p>
+        <h3>{footerData.title}</h3>
+        <p>{footerData.description}</p>
+        <p class="source-code">
+          <a href={footerData.sourceCode.url} target="_blank" rel="noopener noreferrer">
+            {footerData.sourceCode.label}
+          </a>
+        </p>
       </div>
+
+      <!-- Quick Links -->
       <div class="footer-section">
         <h3>Quick Links</h3>
         <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/about">About</a></li>
-          <li><a href="/certs">Certifications</a></li>
-          <li><a href="/error-demo">Error Demo</a></li>
-          <li><a href="/Resume.pdf" class="external-link" target="_blank" rel="noopener noreferrer">Resume</a></li>
+          {#each footerData.quickLinks as link (link.url)}
+            <li>
+              {#if link.external}
+                <a href={link.url} class="external-link" target="_blank" rel="noopener noreferrer">
+                  {link.label}
+                </a>
+              {:else}
+                <a href={link.url}>{link.label}</a>
+              {/if}
+            </li>
+          {/each}
         </ul>
       </div>
+
+      <!-- Social Links -->
       <div class="footer-section">
         <h3>Connect</h3>
         <div class="social-links">
-          <a href={getEmailHref()} aria-label="Email" class="email-link">
-            <img src={emailIcon} alt="Email" width="20" height="20" />
-          </a>
-          <a href="https://www.linkedin.com/in/robert-jackson-ii/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-            <img src={linkedinIcon} alt="LinkedIn" width="20" height="20" />
-          </a>
-          <a href="https://github.com/unacceptable" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-            <img src={githubIcon} alt="GitHub" width="20" height="20" />
-          </a>
-          <a href="https://www.youtube.com/@robert.jackson/videos" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-            <img src={youtubeIcon} alt="YouTube" width="20" height="20" />
-          </a>
-          <a href="https://stackoverflow.com/users/6382401/robert-j" target="_blank" rel="noopener noreferrer" aria-label="Stack Overflow">
-            <img src={stackoverflowIcon} alt="Stack Overflow" width="20" height="20" />
-          </a>
+          {#each socialLinks as social (social.name)}
+            <a
+              href={social.url}
+              aria-label={social.name}
+              class:email-link={social.url.startsWith('mailto:')}
+              target={social.url.startsWith('mailto:') ? undefined : '_blank'}
+              rel={social.url.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+            >
+              <img src={icons[social.icon]} alt={social.name} width="20" height="20" />
+            </a>
+          {/each}
         </div>
       </div>
     </div>
+
+    <!-- Copyright -->
     <div class="footer-bottom">
-      <p>&copy; {new Date().getFullYear()} Portfolio. All rights reserved.</p>
+      <p>&copy; {new Date().getFullYear()} {footerData.title}. All rights reserved.</p>
     </div>
   </div>
 </footer>
-

@@ -79,11 +79,29 @@ async function testFooterQuickLinks(driver: WebDriver): Promise<void> {
   }
 }
 
+async function testFooterSourceCodeLink(driver: WebDriver): Promise<void> {
+  await driver.get(BASE_URL);
+  await driver.wait(until.elementLocated(By.css('.source-code a')), TIMEOUT);
+
+  const sourceLink = await driver.findElement(By.css('.source-code a'));
+  const href = await sourceLink.getAttribute('href');
+  const target = await sourceLink.getAttribute('target');
+
+  if (!href.includes('github.com/unacceptable/portfolio-website')) {
+    throw new Error(`Source code link should point to GitHub repo, got: ${href}`);
+  }
+
+  if (target !== '_blank') {
+    throw new Error('Source code link should open in new tab');
+  }
+}
+
 export const footerTests: TestSuite = {
   name: 'Footer Tests',
   tests: [
     { name: 'Footer exists', fn: testFooterExists },
     { name: 'Footer social links', fn: testFooterSocialLinks },
-    { name: 'Footer quick links', fn: testFooterQuickLinks }
+    { name: 'Footer quick links', fn: testFooterQuickLinks },
+    { name: 'Footer source code link', fn: testFooterSourceCodeLink }
   ]
 };

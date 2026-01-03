@@ -4,18 +4,18 @@ A modern, responsive portfolio website built with SvelteKit 5, featuring a clean
 
 See the result here: [https://cdn.aztek.io](https://cdn.aztek.io)
 
-## 🚀 Features
+## Features
 
 - **Modern Tech Stack**: SvelteKit 5 with TypeScript
 - **Responsive Design**: Mobile-first approach with collapsible navigation
 - **Dark Mode**: Toggle between light and dark themes
 - **Static Site Generation**: Pre-rendered for optimal performance
 - **Docker Deployment**: Containerized with nginx for production
-- **SEO Optimized**: Proper meta tags, robots.txt, and sitemap-ready
+- **SEO Optimized**: Proper meta tags, robots.txt, and sitemap.xml
 - **Accessibility**: ARIA labels, keyboard navigation, and semantic HTML
 - **Professional Portfolio**: Dedicated sections for about, certifications, and resume
 
-## 🏗️ Architecture
+## Architecture
 
 - **Frontend**: SvelteKit 5 with TypeScript
 - **Styling**: Custom CSS with design system
@@ -23,34 +23,40 @@ See the result here: [https://cdn.aztek.io](https://cdn.aztek.io)
 - **Deployment**: S3 + Cloudfront
 - **Error Handling**: Server-side 404 handling with catch-all routes
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ├── src/
 │   ├── routes/
-│   │   ├── +layout.svelte          # Root layout with header/footer
-│   │   ├── +layout.ts              # Global layout configuration
-│   │   ├── +error.svelte           # Error page with animated background
-│   │   ├── +page.svelte            # Home page
-│   │   ├── about/+page.svelte      # About page
-│   │   ├── certs/+page.svelte      # Certifications page
-│   │   └── [...catchall]/+page.ts  # 404 handler for unknown routes
+│   │   ├── +layout.svelte           # Root layout with header/footer
+│   │   ├── +layout.ts               # Global layout configuration
+│   │   ├── +error.svelte            # Error page with animated background
+│   │   ├── +page.svelte             # Home page
+│   │   ├── about/+page.svelte       # About page
+│   │   ├── certs/+page.svelte       # Certifications page
+│   │   ├── error-demo/+page.svelte  # Interactive error animation demo
+│   │   └── [...catchall]/+page.ts   # 404 handler for unknown routes
 │   ├── lib/
-│   │   ├── data/certs.ts           # Certification data
+│   │   ├── animations/              # Animation modules
+│   │   │   └── errorAnimation.ts    # Canvas-based error animation
+│   │   ├── assets/                  # SVG icons for social links
+│   │   ├── data/certs.ts            # Certification data
 │   │   └── styles/design-system.css # Global styles and design tokens
-│   ├── app.html                    # HTML template
-│   └── app.d.ts                    # TypeScript declarations
+│   ├── app.html                     # HTML template
+│   └── app.d.ts                     # TypeScript declarations
 ├── static/
-│   ├── certs/                      # Certificate PDFs
-│   ├── favicon.svg                 # Site favicon (multiple sizes)
-│   ├── robots.txt                  # SEO crawling rules
-│   └── manifest.json               # PWA manifest
-├── docker-compose.yml              # Development/production setup
-├── Dockerfile                      # Production container
-└── nginx.conf                      # nginx configuration to mimic s3 locally
+│   ├── certs/                       # Certificate PDFs
+│   ├── favicon.svg                  # Site favicon (multiple sizes)
+│   ├── robots.txt                   # SEO crawling rules
+│   ├── sitemap.xml                  # XML sitemap for search engines
+│   └── manifest.json                # PWA manifest
+├── tests/                           # Selenium E2E tests
+├── docker-compose.yml               # Development/production setup
+├── Dockerfile                       # Production container
+└── nginx.conf                       # nginx configuration to mimic s3 locally
 ```
 
-## 🛠️ Development
+## Development
 
 ### Prerequisites
 
@@ -100,7 +106,7 @@ docker compose up --build
 - `npm run check` - Run TypeScript and Svelte checks
 - `npm run check:watch` - Run checks in watch mode
 
-## 🐳 Docker Development
+## Docker Development
 
 For a production-like environment:
 
@@ -124,7 +130,7 @@ docker compose logs -f
 docker compose down
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Building for Production
 
@@ -136,7 +142,7 @@ npm run build
 aws s3 sync build/ s3://cdn.aztek.io --delete --acl public-read --profile aztek-org
 ```
 
-## 🎨 Customization
+## Customization
 
 ### Adding New Pages
 
@@ -173,7 +179,7 @@ The design system is centralized in `src/lib/styles/design-system.css`:
 
 Update meta tags in `src/app.html` and ensure proper OpenGraph tags are set for social sharing.
 
-## 🔧 Configuration
+## Configuration
 
 ### nginx Configuration
 
@@ -190,7 +196,7 @@ The `nginx.conf` file handles:
 - Error handling for 404 pages during build
 - Custom fallback handling
 
-## 🐛 Error Handling
+## Error Handling
 
 The site includes comprehensive error handling:
 
@@ -198,14 +204,14 @@ The site includes comprehensive error handling:
 - **Error Page**: Custom error page (`+error.svelte`) with animated background
 - **Build-time**: Proper handling of 404s during static generation
 
-## 🔒 Security
+## Security
 
 - Security headers configured in nginx
 - robots.txt configured to allow search engines but block AI crawlers
 - No sensitive data in client-side code
 - Static site eliminates server-side vulnerabilities
 
-## 📈 Performance
+## Performance
 
 - **Static Generation**: Pre-rendered at build time
 - **Code Splitting**: Automatic route-based code splitting
@@ -213,7 +219,16 @@ The site includes comprehensive error handling:
 - **Caching**: Proper cache headers for static assets
 - **Bundle Analysis**: Use `npm run build` to see bundle sizes
 
-## 🧪 Testing
+## Testing
+
+The project includes 24 Selenium WebDriver E2E tests covering navigation, theme toggle, mobile menu, external links, footer, certifications, error pages, and the error demo.
+
+```bash
+# Run E2E tests (requires local site running)
+docker compose up --build -d
+npm test
+docker compose down
+```
 
 To test the production build locally:
 
@@ -228,18 +243,6 @@ To test Docker build:
 docker-compose up --build
 ```
 
-## 📝 Recent Updates
+## License
 
-See `CLEANUP_SUMMARY.md` for details on recent optimizations and cleanup performed on the codebase.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is private and for portfolio purposes.
+This project is licensed under the GNU General Public License v2.0 - see the [LICENSE](LICENSE) file for details.

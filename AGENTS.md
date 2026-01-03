@@ -2,6 +2,16 @@
 
 Instructions for AI agents working with this codebase.
 
+## Code Principles
+
+**Priority order (highest to lowest):**
+
+1. **Security** — Never compromise on security. Validate inputs, escape outputs, avoid secrets in code, use parameterized queries, and follow the principle of least privilege.
+2. **Readability** — Code should be easy to understand. Use clear naming, consistent formatting, and helpful comments where intent isn't obvious. Future maintainers (including AI agents) must be able to quickly grasp what the code does.
+3. **Elegance** — Prefer simple, clean solutions over clever ones. Reduce complexity, avoid duplication, and structure code logically. Elegance emerges from clarity, not from brevity.
+
+When these conflict, always defer to the higher priority. A secure but verbose solution beats an elegant but vulnerable one. A readable but repetitive solution beats a clever but cryptic one.
+
 ## Code Style Guidelines
 
 ### Emoji
@@ -166,7 +176,7 @@ npm run lint
 npm run check
 
 # 3. Shell script linting (shellcheck)
-find . -name "*.sh" | while read -r SCRIPT; do shellcheck "$SCRIPT"; done
+find . -name "*.sh" -not -path "./node_modules/*" | while read -r SCRIPT; do shellcheck "$SCRIPT"; done
 
 # 4. Run Selenium E2E tests (MANDATORY - requires local site running)
 docker compose up --build -d
@@ -197,7 +207,7 @@ bash scripts/sonarqube-scan.sh
 - **When updating dependencies** - Verify no new vulnerabilities introduced
 - **All linting warnings must be addressed** - Zero tolerance for code quality warnings
 - **Shell scripts must pass shellcheck** - No warnings allowed in scripts/*.sh
-- **Selenium E2E tests must pass** - All 20 tests must pass before deployment
+- **Selenium E2E tests must pass** - All 24 tests must pass before deployment
 - **SonarQube analysis required** - No new code smells, bugs, or vulnerabilities allowed
 
 ### Check for code smells with SonarQube (MANDATORY)
@@ -223,6 +233,7 @@ The script automatically handles:
 ### Complete build and deployment workflow
 ```bash
 # 0. Copy latest resume from source repo (MANDATORY before builds)
+# Path is relative to workspace root at ~/Git/Aztek/Portfolio/cdn-website
 cp -a ../../Documents/resume/Resume.pdf ./static/Resume.pdf
 
 # 1. Run security scans (MANDATORY)
@@ -235,7 +246,7 @@ trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL .
 # 2. Run Selenium E2E tests (MANDATORY)
 docker compose up --build -d
 npm test
-# All 20 tests must pass before proceeding
+# All 24 tests must pass before proceeding
 
 # 3. Run SonarQube analysis (MANDATORY)
 # Follow steps in "Check for code smells with SonarQube" section
@@ -246,14 +257,15 @@ npm run build
 docker compose down
 
 # 5. Deploy to S3
-aws s3 sync build/ s3://cdn.aztek.io --delete --acl public-read --profile aztek-org
+aws s3 sync build/ s3://cdn.aztek.io --delete --acl public-read --profile aztek-org --no-cli-pager
 
 # 6. Invalidate CloudFront cache
-aws cloudfront create-invalidation --distribution-id E6X0JGRX63W96 --paths "/*" --profile aztek-org
+aws cloudfront create-invalidation --distribution-id E6X0JGRX63W96 --paths "/*" --profile aztek-org --no-cli-pager
 ```
 
 ### Docker build and deployment workflow
-```baLint Dockerfile (MANDATORY)
+```bash
+# 1. Lint Dockerfile (MANDATORY)
 hadolint Dockerfile
 
 # 2. Build Docker image
@@ -262,8 +274,7 @@ docker build -t cdn-website:latest .
 # 3. Security scan image (MANDATORY)
 trivy image --severity HIGH,CRITICAL cdn-website:latest
 
-# 4
-# 3. Only proceed if scan shows 0 HIGH/CRITICAL vulnerabilities
+# 4. Only proceed if scan shows 0 HIGH/CRITICAL vulnerabilities
 # Deploy container as needed
 ```
 
@@ -271,6 +282,7 @@ trivy image --severity HIGH,CRITICAL cdn-website:latest
 
 - **NEVER sync `static/` to S3 with `--delete`** - this will delete all generated HTML/JS/CSS and destroy the website
 - **ALWAYS sync `build/` directory** after running `npm run build`
+- **ALWAYS use `--no-cli-pager`** on AWS CLI commands to prevent interactive pager blocking terminal
 - Don't use `cat << EOF` heredocs in terminal - crashes the VS Code terminal
 - Don't forget to invalidate CloudFront after S3 deploy
 - Don't put files in `/tmp` - use workspace directory and clean up after
