@@ -14,11 +14,13 @@ function slugify(text: string): string {
 
 // Configure marked to add IDs to headings
 const renderer = new marked.Renderer();
-const originalHeading = renderer.heading.bind(renderer);
 
-renderer.heading = function ({ text, depth }) {
+renderer.heading = function ({ text, depth, tokens }) {
+	// Use raw text for slug generation (strips HTML)
 	const slug = slugify(text);
-	return `<h${depth} id="${slug}">${text}</h${depth}>`;
+	// Parse inline tokens to get proper HTML (bold, italic, etc.)
+	const content = this.parser.parseInline(tokens);
+	return `<h${depth} id="${slug}">${content}</h${depth}>`;
 };
 
 marked.setOptions({
